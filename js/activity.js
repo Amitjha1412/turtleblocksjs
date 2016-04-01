@@ -76,6 +76,7 @@ define(function (require) {
     require('activity/blockfactory');
     require('activity/analytics');
     require('prefixfree.min');
+    require('activity/presence');
 
     // Manipulate the DOM only when it is ready.
     require(['domReady!'], function (doc) {
@@ -140,6 +141,7 @@ define(function (require) {
         var lastKeyCode = 0;
         var pasteContainer = null;
         var chartBitmap = null;
+        var presence = null;
 
         // Calculate the palette colors.
         for (var p in PALETTECOLORS) {
@@ -445,6 +447,8 @@ define(function (require) {
             turtles = new Turtles(canvas, turtleContainer, refreshCanvas);
             blocks = new Blocks(canvas, blocksContainer, refreshCanvas, trashcan, stage.update);
             palettes = initPalettes(canvas, refreshCanvas, palettesContainer, cellSize, refreshCanvas, trashcan, blocks);
+            presence = new SugarPresence(loadRawProject,saveLocally, turtles, blocks);
+
 
             palettes.setBlocks(blocks);
             turtles.setBlocks(blocks);
@@ -1609,7 +1613,10 @@ define(function (require) {
                 ['palette', changePaletteVisibility],
                 ['hide-blocks', changeBlockVisibility],
                 ['collapse-blocks', toggleCollapsibleStacks],
-                ['help', showHelp]
+                ['help', showHelp],
+                ['share', share],
+                ['showGroups', showGroups],
+                ['sync', sync]
             ];
 
             if (sugarizerCompatibility.isInsideSugarizer()) {
@@ -1924,6 +1931,90 @@ define(function (require) {
                     moved = false;
                 });
             });
+        }
+            function sync() {
+            presence.sync();
+        }
+
+        function share() {
+            presence.share();
+        }
+
+        function showGroups() {
+            presence.sendRequestToListGroups();
+
+            var helpContainer2 = null;
+            helpContainer2 = new createjs.Container();
+            stage.addChild(helpContainer2);
+            helpContainer2.x = 65;
+            helpContainer2.y = 65;
+
+            helpContainer2.on('click', function(event) {
+                var bounds = helpContainer2.getBounds();
+                if (event.stageY < helpContainer2.y + bounds.height / 2) {
+                    helpContainer2.visible = false;
+                    docById('shareElem').style.visibility = 'hidden';
+                } else {
+                    helpIdx += 1;
+                    if (helpIdx >= HELPCONTENT.length) {
+                        helpIdx = 0;
+                    }
+                    var imageScale = 55 * scale; 
+                }
+                update = true;
+            });
+            var img = new Image();
+            img.onload = function() {
+                bitmap = new createjs.Bitmap(img);
+                if (scale > 1) {
+                    bitmap.scaleX = bitmap.scaleY = bitmap.scale = scale;
+                } else {
+                    bitmap.scaleX = bitmap.scaleY = bitmap.scale = 1.125;
+                }
+
+                helpContainer2.addChild(bitmap)
+                var bounds = helpContainer2.getBounds();
+                var hitArea = new createjs.Shape();
+                hitArea.graphics.beginFill('#FFF').drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+                hitArea.x = 0;
+                hitArea.y = 0;
+                helpContainer2.hitArea = hitArea;
+                docById('shareElem').style.visibility = 'visible';
+                update = true;
+            }
+
+            img.src = 'images/help-container.svg';
+                
+            var shareElem = docById('shareElem');
+            shareElem.style.position = 'absolute';
+            shareElem.style.display = 'block';
+            shareElem.style.paddingLeft = 20 * scale + 'px';
+            shareElem.style.paddingRight = 20 * scale + 'px';
+            shareElem.style.paddingTop = '0px';
+            shareElem.style.paddingBottom = 20 * scale + 'px';
+            shareElem.style.fontSize = 20 * scale + 'px';
+            shareElem.style.color = '#ffffff';
+            shareElem.style.left = 65 * scale + 'px';
+            shareElem.style.top = 105 * scale + 'px';
+            var w = Math.min(300, 300 * scale);
+            var h = Math.min(300, 300 * scale);
+            shareElem.style.width = w + 'px';
+            shareElem.style.height = h + 'px';
+
+            if (scale > 1) {
+                bitmap.scaleX = bitmap.scaleY = bitmap.scale = scale;
+            }
+            
+            docById('shareElem').style.visibility = 'visible';
+            helpContainer2.visible = true;
+            update = true;
+
+                // Make sure the palettes and the secondary menus are
+                // visible while help is shown.
+            palettes.show();
+            if (!menuButtonsVisible) {
+                doMenuAnimation(1);
+            }
         }
     }
 
