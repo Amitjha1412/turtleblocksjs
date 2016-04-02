@@ -34,14 +34,14 @@ var groupId = null;
 var shared = 0;
 
 define(function (require) {
-    var activity = require("activity");
+    //var activity = require("activity");
     var collab = require('activity/collab');
 
     // Manipulate the DOM only when it is ready.
     require(['domReady!'], function (doc) {
 
         // Initialize the activity.
-        activity.setup();
+        //activity.setup();
         var activityName = 'splash';
         collab.init(activityName);
 
