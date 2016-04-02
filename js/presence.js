@@ -11,7 +11,7 @@ var getType = function(type){
 	switch(type){
 		case "msgInit":
 			return 0;
-		case "msgInit":
+		case "msgListUsers":
 			return 1;
 		case "msgCreateSharedActivity":
 			return 2;
@@ -149,7 +149,7 @@ function SugarPresence(loadRawProject,saveLocally,turtles,blocks){
 				
 				
 				break;
-			case msgOnSharedActivityUserChanged :
+			case getType("msgOnSharedActivityUserChanged") :
 				var peerdata = { user : res.data.user, turtleList : []};
 				if(res.data.move == -1){
 
